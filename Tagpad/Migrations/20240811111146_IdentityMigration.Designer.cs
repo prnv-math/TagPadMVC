@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tagpad.Data;
 
@@ -11,9 +12,11 @@ using Tagpad.Data;
 namespace Tagpad.Migrations
 {
     [DbContext(typeof(NoteContext))]
-    partial class NoteContextModelSnapshot : ModelSnapshot
+    [Migration("20240811111146_IdentityMigration")]
+    partial class IdentityMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -246,12 +249,7 @@ namespace Tagpad.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserID")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("ID");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Notes");
                 });
@@ -283,12 +281,7 @@ namespace Tagpad.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserID")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Tags");
                 });
@@ -344,42 +337,23 @@ namespace Tagpad.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Tagpad.Models.Note", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Tagpad.Models.NoteTagRecord", b =>
                 {
                     b.HasOne("Tagpad.Models.Note", "Note")
                         .WithMany("NoteTags")
                         .HasForeignKey("NoteID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Tagpad.Models.Tag", "Tag")
                         .WithMany("NoteTags")
                         .HasForeignKey("TagID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Note");
 
                     b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("Tagpad.Models.Tag", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Tagpad.Models.Note", b =>

@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace Tagpad.Models
 {
 #pragma warning disable CS8618
@@ -12,7 +13,12 @@ namespace Tagpad.Models
         public DateTime DateCreated { get; set; }
         public DateTime DateUpdated { get; set; }
         //Below property supports EF.Not included in DB Schema
-        public List<NoteTagRecord>? NoteTags { get; set; }
+        public virtual List<NoteTagRecord>? NoteTags { get; set; }
+
+     
+        public string? UserID { get; set; }
+        [ForeignKey("UserID")]
+        public virtual IdentityUser? User { get; set; }
 
         //compiler by-default creates the constructor below internally when none is there.
         //public Note() { }

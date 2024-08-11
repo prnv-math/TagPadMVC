@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGeneration.Design;
 using Tagpad.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,11 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+//Get connection string
 var connectionString = builder.Configuration.GetConnectionString("Default");
-connectionString = connectionString!.Replace("%PASSWORD%", builder.Configuration["DbPassword"]);
-Console.WriteLine("str : " + builder.Configuration["DbPassword"] + "," + connectionString);
+var pw = builder.Configuration["DbPass"];
+connectionString = connectionString!.Replace("%PASSWORD%", pw);
+Console.WriteLine("pw : "+(pw.Substring(0,(Int16)(pw.Length/4)))+new String('*',pw.Length- (Int16)(pw.Length / 4)));
 
 builder.Services.AddDbContext<NoteContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<NoteContext>();
+
 var app = builder.Build();
 
 //Initialize seed data using scope
@@ -43,10 +51,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
 app.Run();
