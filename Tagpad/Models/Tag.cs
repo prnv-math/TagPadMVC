@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace Tagpad.Models
 {
@@ -13,6 +14,7 @@ namespace Tagpad.Models
         //Below property supports EF. Not included in DB Schema
         public virtual List<NoteTagRecord>? NoteTags {get; set;}
 
+        [ScaffoldColumn(false)]
         public string? UserID { get; set; }
         [ForeignKey("UserID")]
         public virtual IdentityUser? User { get; set; }
