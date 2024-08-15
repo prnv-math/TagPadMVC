@@ -22,7 +22,7 @@ namespace Tagpad.Data
             //define one-to-many relationship where 'User' does not have any list of Notes/Tags.
             //Also disable Multiple cascading paths by disabling cascading on Tags.
             modelBuilder.Entity<Note>().HasOne(n => n.User).WithMany().HasForeignKey(n=>n.UserID);
-            modelBuilder.Entity<Note>().HasOne(t => t.User).WithMany().OnDelete(DeleteBehavior.Restrict).HasForeignKey(t => t.UserID);
+            modelBuilder.Entity<Tag>().HasOne(t => t.User).WithMany().OnDelete(DeleteBehavior.Restrict).HasForeignKey(t => t.UserID);
 
             //define many-to-many relationship
             modelBuilder.Entity<NoteTagRecord>().HasOne(ntr => ntr.Note).WithMany(n => n.NoteTags).HasForeignKey(ntr => ntr.NoteID).OnDelete(DeleteBehavior.Restrict);

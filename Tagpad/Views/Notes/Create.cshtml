@@ -1,4 +1,6 @@
 ﻿@model Tagpad.Models.Note
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<IdentityUser> userManager;
 
 @{
     ViewData["Title"] = "Create";

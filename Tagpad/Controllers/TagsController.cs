@@ -12,23 +12,23 @@ using Tagpad.Models;
 
 namespace Tagpad.Controllers
 {
-    public class NotesController : Controller
+    public class TagsController : Controller
     {
         private readonly NoteContext _context;
 
-        public NotesController(NoteContext context)
+        public TagsController(NoteContext context)
         {
             _context = context;
         }
 
-        // GET: Notes
+        // GET: Tags
         public async Task<IActionResult> Index()
         {
-            var noteContext = _context.Notes.Include(n => n.User).Where(n => (n.UserID == null && !User.Identity!.IsAuthenticated) || n.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var noteContext = _context.Tags.Include(t => t.User).Where(t => (t.UserID == null && User.Identity!.IsAuthenticated==false) || t.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier));
             return View(await noteContext.ToListAsync());
         }
 
-        // GET: Notes/Details/5
+        // GET: Tags/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -36,44 +36,44 @@ namespace Tagpad.Controllers
                 return NotFound();
             }
 
-            var note = await _context.Notes
-                .Include(n => n.User)
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (note == null)
+            var tag = await _context.Tags
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (tag == null)
             {
                 return NotFound();
             }
 
-            return View(note);
+            return View(tag);
         }
 
-        // GET: Notes/Create
+        // GET: Tags/Create
         public IActionResult Create()
         {
             ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
-        // POST: Notes/Create
+        // POST: Tags/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Title,Content,DateCreated,DateUpdated")] Note note)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Tag tag)
         {
             if (ModelState.IsValid)
             {
-                //just creating note for currently logged in user. May re-check if any issues
-                note.UserID = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                _context.Add(note);
+                //just creating tag for currently logged in user. May re-check if any issues
+                tag.UserID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                _context.Add(tag);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", note.UserID);
-            return View(note);
+            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", tag.UserID);
+            return View(tag);
         }
 
-        // GET: Notes/Edit/5
+        // GET: Tags/Edit/5
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -82,23 +82,23 @@ namespace Tagpad.Controllers
                 return NotFound();
             }
 
-            var note = await _context.Notes.FindAsync(id);
-            if (note == null)
+            var tag = await _context.Tags.FindAsync(id);
+            if (tag == null)
             {
                 return NotFound();
             }
-            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", note.UserID);
-            return View(note);
+            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", tag.UserID);
+            return View(tag);
         }
 
-        // POST: Notes/Edit/5
+        // POST: Tags/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,Content,DateCreated,DateUpdated")] Note note)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Tag tag)
         {
-            if (id != note.ID || note.UserID != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (id != tag.Id || tag.UserID != User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 return NotFound();
             }
@@ -107,12 +107,12 @@ namespace Tagpad.Controllers
             {
                 try
                 {
-                    _context.Update(note);
+                    _context.Update(tag);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!NoteExists(note.ID))
+                    if (!TagExists(tag.Id))
                     {
                         return NotFound();
                     }
@@ -123,11 +123,11 @@ namespace Tagpad.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", note.UserID);
-            return View(note);
+            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", tag.UserID);
+            return View(tag);
         }
 
-        // GET: Notes/Delete/5
+        // GET: Tags/Delete/5
         [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -136,36 +136,36 @@ namespace Tagpad.Controllers
                 return NotFound();
             }
 
-            var note = await _context.Notes
-                .Include(n => n.User)
-                .Where(n => n.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier))
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (note == null)
+            var tag = await _context.Tags
+                .Include(t => t.User)
+                .Where(t => t.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (tag == null)
             {
                 return NotFound();
             }
 
-            return View(note);
+            return View(tag);
         }
 
-        // POST: Notes/Delete/5
+        // POST: Tags/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var note = await _context.Notes.FindAsync(id);
-            if (note != null)
+            var tag = await _context.Tags.FindAsync(id);
+            if (tag != null)
             {
-                _context.Notes.Remove(note);
+                _context.Tags.Remove(tag);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool NoteExists(int id)
+        private bool TagExists(int id)
         {
-            return _context.Notes.Any(e => e.ID == id);
+            return _context.Tags.Any(e => e.Id == id);
         }
     }
 }
