@@ -15,16 +15,18 @@ namespace Tagpad.Controllers
     public class NotesController : Controller
     {
         private readonly NoteContext _context;
+        private readonly ILogger<NotesController> _logger;
 
-        public NotesController(NoteContext context)
+        public NotesController(NoteContext context, ILogger<NotesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Notes
         public async Task<IActionResult> Index()
         {
-            var noteContext = _context.Notes.Include(n => n.User).Where(n => (n.UserID == null && !User.Identity!.IsAuthenticated) || n.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var noteContext = _context.Notes.Include(n => n.User).Where(n => (n.UserID == Constants.SystemID && !User.Identity!.IsAuthenticated) || n.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier));
             return View(await noteContext.ToListAsync());
         }
 
@@ -96,11 +98,11 @@ namespace Tagpad.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,Content,DateCreated,DateUpdated")] Note note)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,Content,DateCreated,DateUpdated,UserID")] Note note)
         {
             if (id != note.ID || note.UserID != User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
-                return NotFound();
+             return NotFound();
             }
 
             if (ModelState.IsValid)

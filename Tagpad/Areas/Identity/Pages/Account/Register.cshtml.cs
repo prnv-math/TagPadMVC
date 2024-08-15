@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
@@ -18,6 +19,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Tagpad.Data;
+using Tagpad.Models;
 
 namespace Tagpad.Areas.Identity.Pages.Account
 {
@@ -29,13 +32,15 @@ namespace Tagpad.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly NoteContext _context;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            NoteContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -43,6 +48,7 @@ namespace Tagpad.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -123,6 +129,33 @@ namespace Tagpad.Areas.Identity.Pages.Account
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
+
+                    //copy all ready-made notes and tags into the new user's account
+                    var systemNotes = _context.Notes.Where(n => n.UserID == Constants.SystemID).ToList();
+                    var systemTags = _context.Tags.Where(t => t.UserID == Constants.SystemID).ToList();
+                    foreach (var note in systemNotes)
+                    {
+                        var newNote = new Note
+                        {
+                            Title = note.Title,
+                            Content = note.Content,
+                            DateCreated = DateTime.Now,
+                            DateUpdated = DateTime.Now,
+                            UserID = userId,
+                        };
+                        _context.Notes.Add(newNote);
+                    }
+                    foreach (var tag in systemTags)
+                    {
+                        var newTag = new Tag
+                        {
+                            Name = tag.Name,
+                            UserID = userId,
+                        };
+                        _context.Tags.Add(tag);
+                    }
+                    await _context.SaveChangesAsync();
+
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(

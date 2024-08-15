@@ -24,7 +24,7 @@ namespace Tagpad.Controllers
         // GET: Tags
         public async Task<IActionResult> Index()
         {
-            var noteContext = _context.Tags.Include(t => t.User).Where(t => (t.UserID == null && User.Identity!.IsAuthenticated==false) || t.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var noteContext = _context.Tags.Include(t => t.User).Where(t => (t.UserID == Constants.SystemID && User.Identity!.IsAuthenticated==false) || t.UserID == User.FindFirstValue(ClaimTypes.NameIdentifier));
             return View(await noteContext.ToListAsync());
         }
 
@@ -96,7 +96,7 @@ namespace Tagpad.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Tag tag)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name","UserID")] Tag tag)
         {
             if (id != tag.Id || tag.UserID != User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
